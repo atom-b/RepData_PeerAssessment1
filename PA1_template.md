@@ -29,8 +29,7 @@ actdata[, `:=`(date, as.Date(date, format = "%Y-%m-%d"))]
 
 
 ## What is mean total number of steps taken per day?
-
-Sum the steps by day, excluding any intervals missing step data.
+Create a data.table with the sum of steps for each day, excluding any observations missing step data.
 
 ```r
 dailySteps <- actdata[!is.na(steps), sum(steps), by = date]
@@ -55,7 +54,6 @@ knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
 ## 52: 2012-11-28       10183
 ## 53: 2012-11-29        7047
 ```
-
 
 ### *Make a histogram of the total number of steps taken each day*
 
@@ -89,8 +87,57 @@ median(dailySteps$daily.steps)
 ```
 
 ## What is the average daily activity pattern?
+Create a data.table with the mean of steps for each interval, excluding any observations missing step data.
+
+```r
+intervalSteps <- actdata[!is.na(steps), mean(steps), by = interval]
+setnames(intervalSteps, "V1", "mean.steps")
+```
+
+<!---
+knitr won't preview intervalSteps based on a setnames() call, so we do it here
+-->
+
+```
+##           date daily.steps
+##  1: 2012-10-02         126
+##  2: 2012-10-03       11352
+##  3: 2012-10-04       12116
+##  4: 2012-10-05       13294
+##  5: 2012-10-06       15420
+## ---                       
+## 49: 2012-11-25       11834
+## 50: 2012-11-26       11162
+## 51: 2012-11-27       13646
+## 52: 2012-11-28       10183
+## 53: 2012-11-29        7047
+```
 
 
+### *A time series plot of the 5-minute interval and the mean steps taken in that interval across all days.*
+
+```r
+plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
+     type = "l",
+      col = "cornflowerblue",
+      main = "Mean Steps By Interval",
+      xlab = "Interval",
+      ylab = "Mean Steps")
+```
+
+![plot of chunk meanstepsbyinterval](figure/meanstepsbyinterval.png) 
+
+
+### *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*
+
+```r
+intervalSteps[mean.steps == max(intervalSteps$mean.steps)]
+```
+
+```
+##    interval mean.steps
+## 1:      835      206.2
+```
 
 ## Imputing missing values
 

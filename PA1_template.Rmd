@@ -12,8 +12,7 @@ actdata[,date:= as.Date( date, format = "%Y-%m-%d")]
 ```
 
 ## What is mean total number of steps taken per day?
-
-Sum the steps by day, excluding any intervals missing step data.
+Create a data.table with the sum of steps for each day, excluding any observations missing step data.
 ```{r, echo=TRUE}
 dailySteps <- actdata[!is.na(steps),sum(steps), by=date]
 setnames(dailySteps,"V1","daily.steps")
@@ -24,7 +23,6 @@ knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
 ```{r, echo=FALSE}
 print(dailySteps, topn=5)
 ```
-
 ### *Make a histogram of the total number of steps taken each day*
 ```{r dailystephist, echo=TRUE, tidy=FALSE}
 hist(dailySteps$daily.steps, 
@@ -35,14 +33,37 @@ hist(dailySteps$daily.steps,
       ylab = "Frequency (Days)")
 ```
 ### *Calculate and report the mean and median total number of steps taken per day*
-```{r dailystepmeanmed,echo=TRUE}
+```{r dailystepmeanmed, echo=TRUE}
 mean(dailySteps$daily.steps)
 median(dailySteps$daily.steps)
 ```
 ## What is the average daily activity pattern?
+Create a data.table with the mean of steps for each interval, excluding any observations missing step data.
+```{r, echo=TRUE}
+intervalSteps <- actdata[!is.na(steps),mean(steps), by=interval]
+setnames(intervalSteps,"V1","mean.steps")
+```
+<!---
+knitr won't preview intervalSteps based on a setnames() call, so we do it here
+-->
+```{r, echo=FALSE}
+print(dailySteps, topn=5)
+```
 
+### *A time series plot of the 5-minute interval and the mean steps taken in that interval across all days.*
+```{r meanstepsbyinterval, echo=TRUE, tidy=FALSE}
+plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
+     type = "l",
+      col = "cornflowerblue",
+      main = "Mean Steps By Interval",
+      xlab = "Interval",
+      ylab = "Mean Steps")
+```
 
-
+### *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*
+```{r, echo=TRUE}
+intervalSteps[mean.steps == max(intervalSteps$mean.steps)]
+```
 ## Imputing missing values
 
 
