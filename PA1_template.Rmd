@@ -3,12 +3,42 @@
 
 ## Loading and preprocessing the data
 
+Load the activity data into a data.table (we like data.tables as they're fast), and convert the date column from characters to Dates.
 
+```{r}
+library(data.table)
+actdata <- fread("activity/activity.csv")
+actdata[,date:= as.Date( date, format = "%Y-%m-%d")]
+```
 
 ## What is mean total number of steps taken per day?
 
+Sum the steps by day, excluding any intervals missing step data.
+```{r, echo=TRUE}
+dailySteps <- actdata[!is.na(steps),sum(steps), by=date]
+setnames(dailySteps,"V1","daily.steps")
+```
+<!---
+knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
+-->
+```{r, echo=FALSE}
+print(dailySteps, topn=5)
+```
 
-
+### *Make a histogram of the total number of steps taken each day*
+```{r dailystephist, echo=TRUE, tidy=FALSE}
+hist(dailySteps$daily.steps, 
+      breaks = 5,
+      col = "cornflowerblue",
+      main = "Histogram of Steps Per Day",
+      xlab = "Steps Per Day",
+      ylab = "Frequency (Days)")
+```
+### *Calculate and report the mean and median total number of steps taken per day*
+```{r dailystepmeanmed,echo=TRUE}
+mean(dailySteps$daily.steps)
+median(dailySteps$daily.steps)
+```
 ## What is the average daily activity pattern?
 
 
