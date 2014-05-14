@@ -53,7 +53,7 @@ setnames(dailySteps, "V1", "daily.steps")
 ## 53: 2012-11-29        7047
 ```
 
-### *Make a histogram of the total number of steps taken each day*
+### *Histogram of the total number of steps taken each day*
 
 ```r
 hist(dailySteps$daily.steps, 
@@ -67,7 +67,7 @@ hist(dailySteps$daily.steps,
 
 ![plot of chunk dailystephist](figure/dailystephist.png) 
 
-### *Calculate and report the mean and median total number of steps taken per day*
+### *Mean and median total number of steps taken per day*
 
 ```r
 meansteps <- mean(dailySteps$daily.steps)
@@ -116,7 +116,7 @@ setnames(intervalSteps, "V1", "mean.steps")
 ```
 
 
-### *A time series plot of the 5-minute interval and the mean steps taken in that interval across all days.*
+### *Time series plot of the mean steps per 5 minute interval across all days*
 
 ```r
 plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
@@ -131,7 +131,7 @@ plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
 ![plot of chunk meanstepsbyinterval](figure/meanstepsbyinterval.png) 
 
 
-### *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*
+### *Interval containing the average maximum number of steps*
 
 ```r
 maxinv <- intervalSteps[mean.steps == max(intervalSteps$mean.steps), interval]
@@ -145,7 +145,7 @@ maxinv
 Interval **835** is has the largest average number of steps.
 
 ## Imputing missing values
-### *Calculate and report the total number of missing values in the dataset*
+### *Total number of missing values in the dataset*
 
 ```r
 nrowwithna <- sum(is.na(actdata$steps))
@@ -158,10 +158,10 @@ nrowwithna
 
 There are **2304** rows with NA values.
 
-### *Devise a strategy for filling in all of the missing values in the dataset.*
+### *Strategy for filling in all of the missing values in the dataset*
 We fill in the missing steps values with the mean number of steps for the corresponding interval.
 
-### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
+### *New dataset with missing data filled in*
 A few notes on what this code is doing:
 
 * The "by = interval" term creates a temporary sub-data.table for each unique interval.
@@ -232,7 +232,7 @@ hist(dailyImputed$daily.steps,
 ![plot of chunk dailyimputedhist](figure/dailyimputedhist.png) 
 
 
-### *Calculate and report the mean and median total number of steps taken per day.*
+### *Mean and median total number of steps taken per day.*
 
 ```r
 meanimp <- mean(dailyImputed$daily.steps)
@@ -255,21 +255,16 @@ medimp
 Mean steps per day (with imputed data): **10749.77**
 
 Median steps per day (with imputed data): **10641**
-
-Mean steps per day: **10766.189**
-
-Median steps per day: **10765**
-### *Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?*
-Imputing missing step count values does cause the mean and median daily step counts to differ, though not greatly. 
+#### *What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+Imputing missing step count values does cause the mean and median daily step counts to decrease, but only very slightly.
 
 | NA Values   | Mean           | Median        |
 | ----------- | -------------: | ------------: |
 | Removed     | 10766.189  | 10765  |
 | Imputed     | 10749.77    | 10641    |
 
-
 ## Differences in activity patterns between weekdays and weekends
-### *Create a new factor variable in the dataset indicating whether a given date is a weekday or weekend day.*
+#### *Create a new factor variable in the dataset indicating whether a given date is a weekday or weekend day*
 
 ```r
 actImp[, day.type := as.factor(
@@ -333,7 +328,7 @@ print(actImp[, unique(day.type), by = date], topn = 10)
 ## 61: 2012-11-30 weekday
 ```
 
-### *Plots of the 5-minute interval and the mean steps taken in that interval across weekend and weekdays.*
+### *Plots of the 5-minute interval and the mean steps taken in that interval across weekend and weekdays*
 Let's create a summary table with the mean steps for each interval and day.type.
 
 ```r
