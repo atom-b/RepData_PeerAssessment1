@@ -20,7 +20,7 @@ dailySteps <- actdata[!is.na(steps),sum(steps), by=date]
 setnames(dailySteps,"V1","daily.steps")
 ```
 ```{r, echo=FALSE}
-## knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
+## knitr won't preview a data.table based on a setnames() call, so we do it ourselves
 print(dailySteps, topn=5)
 ```
 ### *Make a histogram of the total number of steps taken each day*
@@ -49,17 +49,16 @@ Create a data.table with the mean of steps for each interval, excluding any obse
 intervalSteps <- actdata[!is.na(steps),mean(steps), by=interval]
 setnames(intervalSteps,"V1","mean.steps")
 ```
-<!---
-knitr won't preview intervalSteps based on a setnames() call, so we do it here
--->
 ```{r, echo=FALSE}
+## knitr won't preview a data.table based on a setnames() call, so we do it ourselves
 print(intervalSteps, topn=5)
 ```
 
 ### *A time series plot of the 5-minute interval and the mean steps taken in that interval across all days.*
 ```{r meanstepsbyinterval, echo=TRUE, tidy=FALSE}
 plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
-     type = "l",
+      ylim = c(0, 300),
+      type = "l",
       col = "cornflowerblue",
       main = "Mean Steps By Interval",
       xlab = "Interval",
@@ -69,6 +68,7 @@ plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
 ### *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*
 ```{r, echo=TRUE}
 maxinv <- intervalSteps[mean.steps == max(intervalSteps$mean.steps),interval]
+maxinv
 ```
 Interval **`r maxinv`** is has the largest average number of steps.
 
@@ -105,6 +105,7 @@ dailyImputed <- actImp[,sum(steps), by=date]
 setnames(dailyImputed,"V1","daily.steps")
 ```
 ```{r, echo=FALSE}
+## knitr won't preview a data.table based on a setnames() call, so we do it ourselves
 print(dailyImputed, topn=5)
 ```
 ```{r dailyimputedhist, echo=TRUE, tidy=FALSE}
@@ -140,3 +141,46 @@ Imputing missing step count values does cause the mean and median daily step cou
 
 
 ## Differences in activity patterns between weekdays and weekends
+### *Create a new factor variable in the dataset indicating whether a given date is a weekday or weekend day.*
+```{r, topn=8, echo=TRUE, tidy=FALSE}
+actImp[, day.type := as.factor(
+                        ifelse( (tolower(weekdays(date)) == "saturday") | 
+                                (tolower(weekdays(date)) == "sunday"),
+                              "weekend", 
+                              "weekday"))]
+levels(actImp$day.type)
+```
+We can check that the day assignment was correct with the following summary. topn=10 is used to ensure we show 5 weekdays bookended with 2 weekends.
+```{r }
+print(actImp[,unique(day.type), by = date], topn=10)
+```
+### *Plots of the 5-minute interval and the mean steps taken in that interval across weekend and weekdays.*
+Let's create a summary table with the mean steps for each interval and day.type.
+```{r, echo=TRUE}
+stepsByType = actImp[, mean(.SD$steps), by=c("interval","day.type")]
+setnames(stepsByType,"V1","mean.steps")
+```
+```{r, echo=FALSE}
+## knitr won't preview a data.table based on a setnames() call, so we do it ourselves
+print(stepsByType, topn=5)
+```
+Then plot the data, enforcing a common y-axis scale to make comparisons easier.
+```{r weekendweekdaysteps, echo=TRUE, tidy=FALSE}
+par(mfrow = c(2,1))
+plot(x = stepsByType[day.type == "weekend",interval],
+      y = stepsByType[day.type == "weekend",mean.steps],
+      ylim = c(0, 300),
+      type = "l",
+      col = "cornflowerblue",
+      main = "Mean Steps By Interval - Weekend",
+      xlab = "Interval",
+      ylab = "Number of Steps")
+plot(x = stepsByType[day.type == "weekday",interval],
+      y = stepsByType[day.type == "weekday",mean.steps],
+      ylim = c(0, 300),
+      type = "l",
+      col = "cornflowerblue",
+      main = "Mean Steps By Interval - Weekday",
+      xlab = "Interval",
+      ylab = "Number of Steps")
+```

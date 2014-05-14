@@ -98,9 +98,6 @@ intervalSteps <- actdata[!is.na(steps), mean(steps), by = interval]
 setnames(intervalSteps, "V1", "mean.steps")
 ```
 
-<!---
-knitr won't preview intervalSteps based on a setnames() call, so we do it here
--->
 
 ```
 ##      interval mean.steps
@@ -122,7 +119,8 @@ knitr won't preview intervalSteps based on a setnames() call, so we do it here
 
 ```r
 plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
-     type = "l",
+      ylim = c(0, 300),
+      type = "l",
       col = "cornflowerblue",
       main = "Mean Steps By Interval",
       xlab = "Interval",
@@ -136,6 +134,11 @@ plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
 
 ```r
 maxinv <- intervalSteps[mean.steps == max(intervalSteps$mean.steps), interval]
+maxinv
+```
+
+```
+## [1] 835
 ```
 
 Interval **835** is has the largest average number of steps.
@@ -259,3 +262,114 @@ Imputing missing step count values does cause the mean and median daily step cou
 
 
 ## Differences in activity patterns between weekdays and weekends
+### *Create a new factor variable in the dataset indicating whether a given date is a weekday or weekend day.*
+
+```r
+actImp[, day.type := as.factor(
+                        ifelse( (tolower(weekdays(date)) == "saturday") | 
+                                (tolower(weekdays(date)) == "sunday"),
+                              "weekend", 
+                              "weekday"))]
+```
+
+```
+##        steps       date interval day.type
+##     1:     1 2012-10-01        0  weekday
+##     2:     0 2012-10-01        5  weekday
+##     3:     0 2012-10-01       10  weekday
+##     4:     0 2012-10-01       15  weekday
+##     5:     0 2012-10-01       20  weekday
+##    ---                                   
+## 17564:     4 2012-11-30     2335  weekday
+## 17565:     3 2012-11-30     2340  weekday
+## 17566:     0 2012-11-30     2345  weekday
+## 17567:     0 2012-11-30     2350  weekday
+## 17568:     1 2012-11-30     2355  weekday
+```
+
+```r
+levels(actImp$day.type)
+```
+
+```
+## [1] "weekday" "weekend"
+```
+
+We can check that the day assignment was correct with the following summary. topn=10 is used to ensure we show 5 weekdays bookended with 2 weekends.
+
+```r
+print(actImp[, unique(day.type), by = date], topn = 10)
+```
+
+```
+##           date      V1
+##  1: 2012-10-01 weekday
+##  2: 2012-10-02 weekday
+##  3: 2012-10-03 weekday
+##  4: 2012-10-04 weekday
+##  5: 2012-10-05 weekday
+##  6: 2012-10-06 weekend
+##  7: 2012-10-07 weekend
+##  8: 2012-10-08 weekday
+##  9: 2012-10-09 weekday
+## 10: 2012-10-10 weekday
+## ---                   
+## 52: 2012-11-21 weekday
+## 53: 2012-11-22 weekday
+## 54: 2012-11-23 weekday
+## 55: 2012-11-24 weekend
+## 56: 2012-11-25 weekend
+## 57: 2012-11-26 weekday
+## 58: 2012-11-27 weekday
+## 59: 2012-11-28 weekday
+## 60: 2012-11-29 weekday
+## 61: 2012-11-30 weekday
+```
+
+### *Plots of the 5-minute interval and the mean steps taken in that interval across weekend and weekdays.*
+Let's create a summary table with the mean steps for each interval and day.type.
+
+```r
+stepsByType = actImp[, mean(.SD$steps), by = c("interval", "day.type")]
+setnames(stepsByType, "V1", "mean.steps")
+```
+
+
+```
+##      interval day.type mean.steps
+##   1:        0  weekday     2.1556
+##   2:        5  weekday     0.4000
+##   3:       10  weekday     0.1556
+##   4:       15  weekday     0.1778
+##   5:       20  weekday     0.0889
+##  ---                             
+## 572:     2335  weekend    11.5000
+## 573:     2340  weekend     6.2500
+## 574:     2345  weekend     1.6250
+## 575:     2350  weekend     0.0000
+## 576:     2355  weekend     0.1250
+```
+
+
+```r
+par(mfrow = c(2,1))
+plot(x = stepsByType[day.type == "weekend",interval],
+      y = stepsByType[day.type == "weekend",mean.steps],
+      ylim = c(0, 300),
+      type = "l",
+      col = "cornflowerblue",
+      main = "Mean Steps By Interval - Weekend",
+      xlab = "Interval",
+      ylab = "Number of Steps")
+plot(x = stepsByType[day.type == "weekday",interval],
+      y = stepsByType[day.type == "weekday",mean.steps],
+      ylim = c(0, 300),
+      type = "l",
+      col = "cornflowerblue",
+      main = "Mean Steps By Interval - Weekday",
+      xlab = "Interval",
+      ylab = "Number of Steps")
+```
+
+![plot of chunk weekendweekdaysteps](figure/weekendweekdaysteps.png) 
+
