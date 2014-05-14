@@ -4,7 +4,6 @@
 ## Loading and preprocessing the data
 
 Load the activity data into a data.table (we like data.tables as they're fast), and convert the date column from characters to Dates.
-
 ```{r}
 library(data.table)
 actdata <- fread("activity/activity.csv")
@@ -26,7 +25,7 @@ print(dailySteps, topn=5)
 ### *Make a histogram of the total number of steps taken each day*
 ```{r dailystephist, echo=TRUE, tidy=FALSE}
 hist(dailySteps$daily.steps, 
-      breaks = 5,
+      breaks = 8,
       col = "cornflowerblue",
       main = "Histogram of Steps Per Day",
       xlab = "Steps Per Day",
@@ -77,8 +76,11 @@ nrowwithna <- sum(is.na(actdata$steps))
 ```
 There are **`r nrowwithna`** rows with NAs.
 
+### *Devise a strategy for filling in all of the missing values in the dataset.*
+We fill in the missing steps values with the median number of steps for the corresponding interval.
+
 ### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
-We fill in the missing steps values with the median number of steps for the corresponding interval. A few notes on what this code does:
+A few notes on what this code is doing:
 
 * The "by = interval" term creates a temporary sub-data.table for each unique interval.
 * The ifelse() expression is run within the context of every sub-tables. 
@@ -86,9 +88,35 @@ We fill in the missing steps values with the median number of steps for the corr
 
 ```{r, echo=TRUE, tidy=FALSE}
 actImp <- copy(actdata)
-actImp[, steps := ifelse( is.na(steps), 
-                          median(.SD$steps, na.rm = TRUE), 
-                          steps)
-       , by = interval]
+actImp[,steps := ifelse( is.na(steps), 
+                        median(.SD$steps, na.rm = TRUE), 
+                        steps),
+        by = interval]
 ```
-## Are there differences in activity patterns between weekdays and weekends?
+
+### *Histogram of the total number of steps taken each day*
+Using the table with imputed values, create a data.table with the sum of steps for each day, then generate a histogram using that summary table.
+
+```{r, echo=TRUE}
+dailyImputed <- actImp[,sum(steps), by=date]
+setnames(dailyImputed,"V1","daily.steps")
+```
+```{r, echo=FALSE}
+print(dailyImputed, topn=5)
+```
+```{r dailyimputedhist, echo=TRUE, tidy=FALSE}
+hist(dailyImputed$daily.steps, 
+      breaks = 8,
+      col = "cornflowerblue",
+      main = "Histogram of Steps Per Day",
+      xlab = "Steps Per Day",
+      ylab = "Frequency (Days)")
+```
+
+### *Calculate and report the mean and median total number of steps taken per day.*
+
+### *Do these values differ from the estimates from the first part of the assignment?*
+
+### *What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+
+## Differences in activity patterns between weekdays and weekends

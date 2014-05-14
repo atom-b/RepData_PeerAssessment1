@@ -5,7 +5,6 @@
 
 Load the activity data into a data.table (we like data.tables as they're fast), and convert the date column from characters to Dates.
 
-
 ```r
 library(data.table)
 actdata <- fread("activity/activity.csv")
@@ -59,7 +58,7 @@ knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
 
 ```r
 hist(dailySteps$daily.steps, 
-      breaks = 5,
+      breaks = 8,
       col = "cornflowerblue",
       main = "Histogram of Steps Per Day",
       xlab = "Steps Per Day",
@@ -138,20 +137,23 @@ nrowwithna <- sum(is.na(actdata$steps))
 
 There are **2304** rows with NAs.
 
-### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
-We fill in the missing steps values with the median number of steps for the corresponding interval. 
+### *Devise a strategy for filling in all of the missing values in the dataset.*
+We fill in the missing steps values with the median number of steps for the corresponding interval.
 
-1. The "by = interval" term creates temporary sub-tables for each interval.
-1. The ifelse() expression is run within the context of every sub-tables. 
-1. .SD is a special reference to the sub-table, allowing us to determine the median value of the steps column within each sub table. We set the value of any NA observations to that median.
+### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
+A few notes on what this code is doing:
+
+* The "by = interval" term creates a temporary sub-data.table for each unique interval.
+* The ifelse() expression is run within the context of every sub-tables. 
+* .SD is a special reference to the sub-table, allowing us to determine the median value of the steps column within each sub table. We set the value of any NA observations to that median.
 
 
 ```r
 actImp <- copy(actdata)
-actImp[, steps := ifelse( is.na(steps), 
-                          median(.SD$steps, na.rm = TRUE), 
-                          steps)
-       , by = interval]
+actImp[,steps := ifelse( is.na(steps), 
+                        median(.SD$steps, na.rm = TRUE), 
+                        steps),
+        by = interval]
 ```
 
 ```
@@ -168,5 +170,51 @@ actImp[, steps := ifelse( is.na(steps),
 ## 17567:     0 2012-11-30     2350
 ## 17568:     0 2012-11-30     2355
 ```
+
+
+### *Histogram of the total number of steps taken each day*
+Using the table with imputed values, create a data.table with the sum of steps for each day, then generate a histogram using that summary table.
+
+
+```r
+dailyImputed <- actImp[, sum(steps), by = date]
+setnames(dailyImputed, "V1", "daily.steps")
+```
+
+
+```
+##           date daily.steps
+##  1: 2012-10-01        1141
+##  2: 2012-10-02         126
+##  3: 2012-10-03       11352
+##  4: 2012-10-04       12116
+##  5: 2012-10-05       13294
+## ---                       
+## 57: 2012-11-26       11162
+## 58: 2012-11-27       13646
+## 59: 2012-11-28       10183
+## 60: 2012-11-29        7047
+## 61: 2012-11-30        1141
+```
+
+
+```r
+hist(dailyImputed$daily.steps, 
+      breaks = 8,
+      col = "cornflowerblue",
+      main = "Histogram of Steps Per Day",
+      xlab = "Steps Per Day",
+      ylab = "Frequency (Days)")
+```
+
+![plot of chunk dailyimputedhist](figure/dailyimputedhist.png) 
+
+
+### *Calculate and report the mean and median total number of steps taken per day.*
+
+### *Do these values differ from the estimates from the first part of the assignment?*
+
+### *What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
