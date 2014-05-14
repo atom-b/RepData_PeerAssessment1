@@ -34,9 +34,13 @@ hist(dailySteps$daily.steps,
 ```
 ### *Calculate and report the mean and median total number of steps taken per day*
 ```{r dailystepmeanmed, echo=TRUE}
-mean(dailySteps$daily.steps)
-median(dailySteps$daily.steps)
+meansteps <- mean(dailySteps$daily.steps)
+medsteps <- median(dailySteps$daily.steps)
 ```
+Mean steps per day: **`r meansteps`**
+
+Median steps per day: **`r medsteps`**
+
 ## What is the average daily activity pattern?
 Create a data.table with the mean of steps for each interval, excluding any observations missing step data.
 ```{r, echo=TRUE}
@@ -47,7 +51,7 @@ setnames(intervalSteps,"V1","mean.steps")
 knitr won't preview intervalSteps based on a setnames() call, so we do it here
 -->
 ```{r, echo=FALSE}
-print(dailySteps, topn=5)
+print(intervalSteps, topn=5)
 ```
 
 ### *A time series plot of the 5-minute interval and the mean steps taken in that interval across all days.*
@@ -62,10 +66,29 @@ plot(x = intervalSteps$interval, y = intervalSteps$mean.steps,
 
 ### *Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?*
 ```{r, echo=TRUE}
-intervalSteps[mean.steps == max(intervalSteps$mean.steps)]
+maxinv <- intervalSteps[mean.steps == max(intervalSteps$mean.steps),interval]
 ```
+Interval **`r maxinv`** is has the largest average number of steps.
+
 ## Imputing missing values
+### *Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)*
+```{r, echo=TRUE}
+nrowwithna <- sum(is.na(actdata$steps))
+```
+There are **`r nrowwithna`** rows with NAs.
 
+### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
+We fill in the missing steps values with the median number of steps for the corresponding interval. A few notes on what this code does:
 
+* The "by = interval" term creates a temporary sub-data.table for each unique interval.
+* The ifelse() expression is run within the context of every sub-tables. 
+* .SD is a special reference to the sub-table, allowing us to determine the median value of the steps column within each sub table. We set the value of any NA observations to that median.
 
+```{r, echo=TRUE, tidy=FALSE}
+actImp <- copy(actdata)
+actImp[, steps := ifelse( is.na(steps), 
+                          median(.SD$steps, na.rm = TRUE), 
+                          steps)
+       , by = interval]
+```
 ## Are there differences in activity patterns between weekdays and weekends?
