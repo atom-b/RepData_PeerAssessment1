@@ -1,5 +1,7 @@
-# Reproducible Research: Peer Assessment 1
 
+
+
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
 
@@ -35,9 +37,6 @@ dailySteps <- actdata[!is.na(steps), sum(steps), by = date]
 setnames(dailySteps, "V1", "daily.steps")
 ```
 
-<!---
-knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
--->
 
 ```
 ##           date daily.steps
@@ -71,10 +70,23 @@ hist(dailySteps$daily.steps,
 
 ```r
 meansteps <- mean(dailySteps$daily.steps)
-medsteps <- median(dailySteps$daily.steps)
+meansteps
 ```
 
-Mean steps per day: **1.0766 &times; 10<sup>4</sup>**
+```
+## [1] 10766
+```
+
+```r
+medsteps <- median(dailySteps$daily.steps)
+medsteps
+```
+
+```
+## [1] 10765
+```
+
+Mean steps per day: **10766.189**
 
 Median steps per day: **10765**
 
@@ -92,17 +104,17 @@ knitr won't preview intervalSteps based on a setnames() call, so we do it here
 
 ```
 ##      interval mean.steps
-##   1:        0    1.71698
-##   2:        5    0.33962
-##   3:       10    0.13208
-##   4:       15    0.15094
-##   5:       20    0.07547
+##   1:        0     1.7170
+##   2:        5     0.3396
+##   3:       10     0.1321
+##   4:       15     0.1509
+##   5:       20     0.0755
 ##  ---                    
-## 284:     2335    4.69811
-## 285:     2340    3.30189
-## 286:     2345    0.64151
-## 287:     2350    0.22642
-## 288:     2355    1.07547
+## 284:     2335     4.6981
+## 285:     2340     3.3019
+## 286:     2345     0.6415
+## 287:     2350     0.2264
+## 288:     2355     1.0755
 ```
 
 
@@ -138,37 +150,37 @@ nrowwithna <- sum(is.na(actdata$steps))
 There are **2304** rows with NAs.
 
 ### *Devise a strategy for filling in all of the missing values in the dataset.*
-We fill in the missing steps values with the median number of steps for the corresponding interval.
+We fill in the missing steps values with the mean number of steps for the corresponding interval.
 
 ### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
 A few notes on what this code is doing:
 
 * The "by = interval" term creates a temporary sub-data.table for each unique interval.
-* The ifelse() expression is run within the context of every sub-tables. 
-* .SD is a special reference to the sub-table, allowing us to determine the median value of the steps column within each sub table. We set the value of any NA observations to that median.
+* The ifelse() expression in the j term is run within the context of each sub-table. 
+* .SD is a special reference to the sub-table, allowing us to determine the mean value of the steps column within each sub table. We set the value of any NA observations to that mean.
 
 
 ```r
 actImp <- copy(actdata)
 actImp[,steps := ifelse( is.na(steps), 
-                        median(.SD$steps, na.rm = TRUE), 
+                        as.integer(mean(.SD$steps, na.rm = TRUE)), 
                         steps),
         by = interval]
 ```
 
 ```
 ##        steps       date interval
-##     1:     0 2012-10-01        0
+##     1:     1 2012-10-01        0
 ##     2:     0 2012-10-01        5
 ##     3:     0 2012-10-01       10
 ##     4:     0 2012-10-01       15
 ##     5:     0 2012-10-01       20
 ##    ---                          
-## 17564:     0 2012-11-30     2335
-## 17565:     0 2012-11-30     2340
+## 17564:     4 2012-11-30     2335
+## 17565:     3 2012-11-30     2340
 ## 17566:     0 2012-11-30     2345
 ## 17567:     0 2012-11-30     2350
-## 17568:     0 2012-11-30     2355
+## 17568:     1 2012-11-30     2355
 ```
 
 
@@ -184,7 +196,7 @@ setnames(dailyImputed, "V1", "daily.steps")
 
 ```
 ##           date daily.steps
-##  1: 2012-10-01        1141
+##  1: 2012-10-01       10641
 ##  2: 2012-10-02         126
 ##  3: 2012-10-03       11352
 ##  4: 2012-10-04       12116
@@ -194,7 +206,7 @@ setnames(dailyImputed, "V1", "daily.steps")
 ## 58: 2012-11-27       13646
 ## 59: 2012-11-28       10183
 ## 60: 2012-11-29        7047
-## 61: 2012-11-30        1141
+## 61: 2012-11-30       10641
 ```
 
 
@@ -212,9 +224,38 @@ hist(dailyImputed$daily.steps,
 
 ### *Calculate and report the mean and median total number of steps taken per day.*
 
-### *Do these values differ from the estimates from the first part of the assignment?*
+```r
+meanimp <- mean(dailyImputed$daily.steps)
+meanimp
+```
 
-### *What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+```
+## [1] 10750
+```
+
+```r
+medimp <- median(dailyImputed$daily.steps)
+medimp
+```
+
+```
+## [1] 10641
+```
+
+Mean steps per day (with imputed data): **10749.77**
+
+Median steps per day (with imputed data): **10641**
+
+Mean steps per day: **10766.189**
+
+Median steps per day: **10765**
+### *Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+Imputing missing step count values does cause the mean and median daily step counts to differ, though not greatly. 
+
+| NA Values   | Mean           | Median        |
+| ----------- | -------------: | ------------: |
+| Removed     | 10766.189  | 10765  |
+| Imputed     | 10749.77    | 10641    |
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+## Differences in activity patterns between weekdays and weekends

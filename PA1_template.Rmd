@@ -1,5 +1,8 @@
-# Reproducible Research: Peer Assessment 1
+```{r setup, echo=FALSE, cache=FALSE}
+options(scipen = 6, digits = 3)
+```
 
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
 
@@ -16,10 +19,8 @@ Create a data.table with the sum of steps for each day, excluding any observatio
 dailySteps <- actdata[!is.na(steps),sum(steps), by=date]
 setnames(dailySteps,"V1","daily.steps")
 ```
-<!---
-knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
--->
 ```{r, echo=FALSE}
+## knitr won't preview dailySteps based on a setnames() call, so we do it ourselves
 print(dailySteps, topn=5)
 ```
 ### *Make a histogram of the total number of steps taken each day*
@@ -34,7 +35,9 @@ hist(dailySteps$daily.steps,
 ### *Calculate and report the mean and median total number of steps taken per day*
 ```{r dailystepmeanmed, echo=TRUE}
 meansteps <- mean(dailySteps$daily.steps)
+meansteps
 medsteps <- median(dailySteps$daily.steps)
+medsteps
 ```
 Mean steps per day: **`r meansteps`**
 
@@ -77,19 +80,19 @@ nrowwithna <- sum(is.na(actdata$steps))
 There are **`r nrowwithna`** rows with NAs.
 
 ### *Devise a strategy for filling in all of the missing values in the dataset.*
-We fill in the missing steps values with the median number of steps for the corresponding interval.
+We fill in the missing steps values with the mean number of steps for the corresponding interval.
 
 ### *Create a new dataset that is equal to the original dataset but with the missing data filled in.*
 A few notes on what this code is doing:
 
 * The "by = interval" term creates a temporary sub-data.table for each unique interval.
-* The ifelse() expression is run within the context of every sub-tables. 
-* .SD is a special reference to the sub-table, allowing us to determine the median value of the steps column within each sub table. We set the value of any NA observations to that median.
+* The ifelse() expression in the j term is run within the context of each sub-table. 
+* .SD is a special reference to the sub-table, allowing us to determine the mean value of the steps column within each sub table. We set the value of any NA observations to that mean.
 
 ```{r, echo=TRUE, tidy=FALSE}
 actImp <- copy(actdata)
 actImp[,steps := ifelse( is.na(steps), 
-                        median(.SD$steps, na.rm = TRUE), 
+                        as.integer(mean(.SD$steps, na.rm = TRUE)), 
                         steps),
         by = interval]
 ```
@@ -114,9 +117,26 @@ hist(dailyImputed$daily.steps,
 ```
 
 ### *Calculate and report the mean and median total number of steps taken per day.*
+```{r, echo=TRUE}
+meanimp <- mean(dailyImputed$daily.steps)
+meanimp
+medimp <- median(dailyImputed$daily.steps)
+medimp
+```
+Mean steps per day (with imputed data): **`r meanimp`**
 
-### *Do these values differ from the estimates from the first part of the assignment?*
+Median steps per day (with imputed data): **`r medimp`**
 
-### *What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+Mean steps per day: **`r meansteps`**
+
+Median steps per day: **`r medsteps`**
+### *Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+Imputing missing step count values does cause the mean and median daily step counts to differ, though not greatly. 
+
+| NA Values   | Mean           | Median        |
+| ----------- | -------------: | ------------: |
+| Removed     | `r meansteps`  | `r medsteps`  |
+| Imputed     | `r meanimp`    | `r medimp`    |
+
 
 ## Differences in activity patterns between weekdays and weekends
