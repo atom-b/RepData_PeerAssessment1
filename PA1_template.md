@@ -58,6 +58,7 @@ setnames(dailySteps, "V1", "daily.steps")
 ```r
 hist(dailySteps$daily.steps, 
       breaks = 8,
+      ylim = c(0,25),
       col = "cornflowerblue",
       main = "Histogram of Steps Per Day",
       xlab = "Steps Per Day",
@@ -144,13 +145,18 @@ maxinv
 Interval **835** is has the largest average number of steps.
 
 ## Imputing missing values
-### *Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)*
+### *Calculate and report the total number of missing values in the dataset*
 
 ```r
 nrowwithna <- sum(is.na(actdata$steps))
+nrowwithna
 ```
 
-There are **2304** rows with NAs.
+```
+## [1] 2304
+```
+
+There are **2304** rows with NA values.
 
 ### *Devise a strategy for filling in all of the missing values in the dataset.*
 We fill in the missing steps values with the mean number of steps for the corresponding interval.
@@ -216,6 +222,7 @@ setnames(dailyImputed, "V1", "daily.steps")
 ```r
 hist(dailyImputed$daily.steps, 
       breaks = 8,
+      ylim = c(0,25),
       col = "cornflowerblue",
       main = "Histogram of Steps Per Day",
       xlab = "Steps Per Day",
@@ -350,6 +357,7 @@ setnames(stepsByType, "V1", "mean.steps")
 ## 576:     2355  weekend     0.1250
 ```
 
+Plot the summary table, enforcing a common y-axis scale to make comparisons between the plots easier.
 
 ```r
 par(mfrow = c(2,1))

@@ -27,6 +27,7 @@ print(dailySteps, topn=5)
 ```{r dailystephist, echo=TRUE, tidy=FALSE}
 hist(dailySteps$daily.steps, 
       breaks = 8,
+      ylim = c(0,25),
       col = "cornflowerblue",
       main = "Histogram of Steps Per Day",
       xlab = "Steps Per Day",
@@ -73,11 +74,12 @@ maxinv
 Interval **`r maxinv`** is has the largest average number of steps.
 
 ## Imputing missing values
-### *Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)*
+### *Calculate and report the total number of missing values in the dataset*
 ```{r, echo=TRUE}
 nrowwithna <- sum(is.na(actdata$steps))
+nrowwithna
 ```
-There are **`r nrowwithna`** rows with NAs.
+There are **`r nrowwithna`** rows with NA values.
 
 ### *Devise a strategy for filling in all of the missing values in the dataset.*
 We fill in the missing steps values with the mean number of steps for the corresponding interval.
@@ -111,6 +113,7 @@ print(dailyImputed, topn=5)
 ```{r dailyimputedhist, echo=TRUE, tidy=FALSE}
 hist(dailyImputed$daily.steps, 
       breaks = 8,
+      ylim = c(0,25),
       col = "cornflowerblue",
       main = "Histogram of Steps Per Day",
       xlab = "Steps Per Day",
@@ -164,7 +167,7 @@ setnames(stepsByType,"V1","mean.steps")
 ## knitr won't preview a data.table based on a setnames() call, so we do it ourselves
 print(stepsByType, topn=5)
 ```
-Then plot the data, enforcing a common y-axis scale to make comparisons easier.
+Plot the summary table, enforcing a common y-axis scale to make comparisons between the plots easier.
 ```{r weekendweekdaysteps, echo=TRUE, tidy=FALSE}
 par(mfrow = c(2,1))
 plot(x = stepsByType[day.type == "weekend",interval],
